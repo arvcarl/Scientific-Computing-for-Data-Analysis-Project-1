@@ -1,12 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
-<<<<<<< HEAD
 from pathlib import Path
 
 this_dir = Path(__file__).resolve().parent
-sat_path = this_dir / "mättnadskurva_kväve.txt"
-=======
+sat_path = this_dir / "placeholder"
+
 def Euler_Maruyama(x0, u, h, T, D, N):
     '''
     x0 - starting position 
@@ -28,4 +26,3 @@ def Euler_Maruyama(x0, u, h, T, D, N):
 X = Euler_Maruyama(np.zeros([2,1]), np.array([0.0,0]), 0.1, 100, 0.2, 1)
 plt.plot(X[0,:], X[1,:])
 plt.show()
->>>>>>> b11f79f (Added implementation of Euler-Maruyama method)
