@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from pathlib import Path
+'''from pathlib import Path
 
 this_dir = Path(__file__).resolve().parent
-sat_path = this_dir / "placeholder"
+sat_path = this_dir / "placeholder" '''
 
 def Euler_Maruyama(x0, u, h, T, D, N):
     '''
@@ -14,26 +14,21 @@ def Euler_Maruyama(x0, u, h, T, D, N):
     D  - diffusion coefficient
     N  - number of particles
     '''
-    X_N = np.zeros([2, int(T/h)+2, 0])
-    print(X_N.shape)
+    X_N = np.zeros([2, int(T/h)+1, 0]) # array for position over time of every particle
     for p in range(N):
         X = x0
         n_step = 0 # number of steps
-        while n_step*h <= T: 
-            Z = np.random.normal(0, 1, 2)
-            new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z
-            X = np.column_stack((X, new_X))
+        while n_step*h < T: 
+            Z = np.random.normal(0, 1, 2) 
+            new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z # calculates position of next step
+            X = np.column_stack((X, new_X)) # appends next step to X
             n_step += 1
-        #print(X_N.shape)
-        #X_N[p] = X
-        X_N = np.dstack((X_N, X))
-        print(X_N.shape)
-        print(X_N)
-    return X_N 
-'''
-X_N is three dimensional
+        X_N = np.dstack((X_N, X)) # appends particle X_p to array 
+    return X_N
 
-1: Dimensions (in this case 2)
+'''
+X_N is a three dimensional array
+1: Spacial dimensions (in this case 2)
 2: Time steps
 3: Particle number
 '''
