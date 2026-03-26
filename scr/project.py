@@ -25,7 +25,6 @@ def Euler_Maruyama(x0, u, h, T, D, N):
             n_step += 1
         X_N = np.dstack((X_N, X)) # appends particle X_p to array 
     return X_N
-
 '''
 X_N is a three dimensional array
 1: Spacial dimensions (in this case 2)
@@ -33,6 +32,41 @@ X_N is a three dimensional array
 3: Particle number
 '''
 
-X = Euler_Maruyama(np.zeros([2,1]), np.array([0,0]), 0.1, 10, 0.1, 100)
+
+
+def particle_cloud(x0, u, h, T_sec, D, N):
+    X = Euler_Maruyama(x0, u, h, max(T_sec), D, N) # runs simulation 
+    t = (T_sec/h).astype(int) # converts time in seconds to correct step
+
+    plt.subplot(2,2,1)
+    plt.scatter(X[0,t[0]],X[1,t[0]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('15 s')
+
+    plt.subplot(2,2,2)
+    plt.scatter(X[0,t[1]],X[1,t[1]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('30 s')
+
+    plt.subplot(2,2,3)
+    plt.scatter(X[0,t[2]],X[1,t[2]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('45 s')
+
+    plt.subplot(2,2,4)
+    plt.scatter(X[0,t[3]],X[1,t[3]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('60 s')
+
+    plt.show()
+
+h = 0.1
+X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 100)
 plt.plot(X[0,:], X[1,:])
 plt.show()
+#T_sec = np.array([15, 30, 45, 60])
+#particle_cloud(np.zeros([2, 1]), np.array([0.3, 0]), 0.1, T_sec, 0.02, 100)
