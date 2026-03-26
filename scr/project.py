@@ -65,8 +65,38 @@ def particle_cloud(x0, u, h, T_sec, D, N):
     plt.show()
 
 h = 0.1
-X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 100)
-plt.plot(X[0,:], X[1,:])
-plt.show()
+X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
+#plt.plot(X[0,:], X[1,:])
+#plt.show()
 #T_sec = np.array([15, 30, 45, 60])
 #particle_cloud(np.zeros([2, 1]), np.array([0.3, 0]), 0.1, T_sec, 0.02, 100)
+
+
+def concentration(x0, u, h, T_sec, D, N):
+    X = Euler_Maruyama(x0, u, h, T_sec, D, N)
+    nx, ny = 201, 101
+    e = 0.1
+    t = int(T_sec/h)
+    xp = np.linspace(0, 25, nx)
+    yp = np.linspace(-5, 5, ny)
+    xc, yc = np.meshgrid(xp, yp, indexing='xy')
+    C = np.zeros_like(xc)
+    for i, xc in enumerate(xp):
+        pass
+        for j, yc in enumerate(yp):
+            deltasum = 0
+            x = np.array([xc, yc])
+            for p in range(N):
+                dx = x - X[:,t,p]
+                delta = 1/(2*np.pi*e**2)*np.exp(-np.dot(dx, dx)/(2*e**2))
+                deltasum += delta
+            deltasum /= N
+            C[j, i] = deltasum
+    return xp, yp, C/N
+
+from matplotlib import ticker, cm
+
+x, y, C = concentration(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
+cs = plt.contourf(x, y, C)
+cbar = plt.colorbar(cs)
+plt.show()
