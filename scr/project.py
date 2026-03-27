@@ -8,7 +8,6 @@ this_dir = Path(__file__).resolve().parent
 sat_path = this_dir / "placeholder" '''
 
 def Euler_Maruyama(x0, u, h, T, D, N):
-    start = time.time()
     '''
     x0 - starting position 
     u  - velocity field
@@ -27,8 +26,6 @@ def Euler_Maruyama(x0, u, h, T, D, N):
             X = np.column_stack((X, new_X)) # appends next step to X
             n_step += 1
         X_N = np.dstack((X_N, X)) # appends particle X_p to array 
-    end = time.time()
-    print(end - start)
     return X_N
 '''
 X_N is a three dimensional array
@@ -69,6 +66,9 @@ def particle_cloud(x0, u, h, T_sec, D, N):
     plt.show()
 
 h = 0.1
+u = np.array([0,0])
+
+
 #X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
 #plt.plot(X[0,:], X[1,:])
 #plt.show()
@@ -77,9 +77,7 @@ h = 0.1
 
 
 def concentration(x0, u, h, T_sec, D, N):
-    start = time.time()
     X = Euler_Maruyama(x0, u, h, T_sec, D, N)
-    print('-----')
     nx, ny = 201, 101
     e = 0.1
     t = int(T_sec/h)
@@ -92,11 +90,9 @@ def concentration(x0, u, h, T_sec, D, N):
         d = (x_grid - xp)**2 + (y_grid - yp)**2
         C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2))
     C /= N
-    end = time.time()
-    print(end - start)
     return x_grid, y_grid, C
 
-x, y, C = concentration(np.zeros([2,1]), np.array([0.3,0]), h, 15, 0.02, 50)
+x, y, C = concentration(np.zeros([2,1]), u, h, 15, 0.02, 2000)
 cs = plt.contourf(x, y, C)
 cbar = plt.colorbar(cs)
 plt.show()
