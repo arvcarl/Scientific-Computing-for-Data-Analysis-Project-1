@@ -66,7 +66,7 @@ def particle_cloud(x0, u, h, T_sec, D, N):
     plt.show()
 
 h = 0.1
-u = np.array([0,0])
+u = np.array([0.3,0])
 
 
 #X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
@@ -77,22 +77,26 @@ u = np.array([0,0])
 
 
 def concentration(x0, u, h, T_sec, D, N):
-    X = Euler_Maruyama(x0, u, h, T_sec, D, N)
+    X = Euler_Maruyama(x0, u, h, max(T_sec), D, N)
     nx, ny = 201, 101
     e = 0.1
-    t = int(T_sec/h)
-    x_span = np.linspace(0, 25, nx)
-    y_span = np.linspace(-5, 5, ny)
-    x_grid, y_grid = np.meshgrid(x_span, y_span)
-    C = np.zeros_like(x_grid)
-    for p in range(N):
-        xp, yp = X[0, t, p], X[1, t, p]
-        d = (x_grid - xp)**2 + (y_grid - yp)**2
-        C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2))
-    C /= N
+    fig, axes = plt.subplots(2, 2)
+    for i, t_n in enumerate(T_sec):
+        t = int(T_sec[i]/h)
+        x_span = np.linspace(0, 25, nx)
+        y_span = np.linspace(-5, 5, ny)
+        x_grid, y_grid = np.meshgrid(x_span, y_span)
+        C = np.zeros_like(x_grid)
+        for p in range(N):
+            xp, yp = X[0, t, p], X[1, t, p]
+            d = (x_grid - xp)**2 + (y_grid - yp)**2
+            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2))
+        C /= N
+        plt.subplot(2,2,i + 1)
+        plt.contourf(x_grid, y_grid, C)
+    plt.colorbar(ax = axes.ravel().tolist())
+    plt.show()
     return x_grid, y_grid, C
 
-x, y, C = concentration(np.zeros([2,1]), u, h, 15, 0.02, 2000)
-cs = plt.contourf(x, y, C)
-cbar = plt.colorbar(cs)
+x, y, C = concentration(np.zeros([2,1]), u, h, np.array([15, 30, 45, 60]), 0.02, 2000)
 plt.show()
