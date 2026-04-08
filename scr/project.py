@@ -78,21 +78,22 @@ u = np.array([0.3,0])
 
 def concentration(x0, u, h, T_sec, D, N):
     X = Euler_Maruyama(x0, u, h, max(T_sec), D, N)
-    nx, ny = 201, 101
-    e = 0.1
-    fig, axes = plt.subplots(2, 2)
-    for i, t_n in enumerate(T_sec):
+    nx, ny = 201, 101 # size of grid
+    e = 0.1 # epsilon for Dirac delta approximation
+    _, axes = plt.subplots(2, 2)
+    for i, _ in enumerate(T_sec): 
         t = int(T_sec[i]/h)
         x_span = np.linspace(0, 25, nx)
         y_span = np.linspace(-5, 5, ny)
-        x_grid, y_grid = np.meshgrid(x_span, y_span)
+        x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
         C = np.zeros_like(x_grid)
         for p in range(N):
             xp, yp = X[0, t, p], X[1, t, p]
-            d = (x_grid - xp)**2 + (y_grid - yp)**2
-            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2))
+            d = (x_grid - xp)**2 + (y_grid - yp)**2 # Dirac delta approximation
+            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2)) # Adds particles to grid
         C /= N
         plt.subplot(2,2,i + 1)
+        plt.title(f'{T_sec[i]} s')
         plt.contourf(x_grid, y_grid, C)
     plt.colorbar(ax = axes.ravel().tolist())
     plt.show()
