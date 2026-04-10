@@ -99,12 +99,11 @@ def concentration(x0, u, h, T_sec, D, N):
     plt.show()
     return x_grid, y_grid, C
 
-def source_simulation(x0, u, h, T_sec, D, Q):
+def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
     t = int(T_sec/h) # total time steps
     n_particles = int(Q*h) # new particles added every time step
     X_tot = np.zeros([2, int(T_sec/h)+1, 0])
     for timestep in range(t):
-        print(timestep)
         X_temp = np.zeros([2, timestep, n_particles])
         X_N = np.zeros([2, int(T_sec/h)+1 - timestep, 0]) # array for position over time of every particle
         for p in range(n_particles):
@@ -118,17 +117,40 @@ def source_simulation(x0, u, h, T_sec, D, Q):
             X_N = np.dstack((X_N, X)) # appends particle X_p to array 
         X_temp = np.concatenate((X_temp, X_N), axis = 1)
         X_tot = np.concatenate((X_tot, X_temp), axis = 2)
-    
-    return X_tot
+    X = X_tot
 
 
-X = source_simulation(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 100)
+    N = n_particles * t # total amount of particles
+    nx, ny = 201, 101 # size of grid
+    e = 0.1 # epsilon for Dirac delta approximation
+    _, axes = plt.subplots(2, 2)
+    for i, _ in enumerate(plot_times): 
+        t = int(plot_times[i]/h)
+        x_span = np.linspace(0, 25, nx)
+        y_span = np.linspace(-5, 5, ny)
+        x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
+        C = np.zeros_like(x_grid)
+        for p in range(int(N*(i+1)/len(plot_times))): # removes not yet existing particles by only incrementing to the index around where they currently start
+            xp, yp = X[0, t, p], X[1, t, p]
+            d = (x_grid - xp)**2 + (y_grid - yp)**2 # Dirac delta approximation
+            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2)) # Adds particles to grid
+        C /= N
+        plt.subplot(2,2,i + 1)
+        plt.title(f'{plot_times[i]} s')
+        plt.contourf(x_grid, y_grid, C)
+    plt.colorbar(ax = axes.ravel().tolist())
+    plt.show()
+    return X
 
-'''
+plot_times = np.array([15, 30, 45, 60])
+
+X = source_simulation(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 100, plot_times)
+
 
 T_sec = np.array([15, 30, 45, 60])
 t = (T_sec/h).astype(int)
 
+'''
 plt.subplot(2,2,1)
 plt.scatter(X[0,t[0]],X[1,t[0]])
 plt.xlim(0,25)
