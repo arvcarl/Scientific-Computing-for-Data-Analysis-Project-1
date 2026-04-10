@@ -7,6 +7,13 @@ import time
 this_dir = Path(__file__).resolve().parent
 sat_path = this_dir / "placeholder" '''
 
+'''
+
+Simulation parameters and prepared function calls are in the bottom of the program
+
+'''
+
+
 def Euler_Maruyama(x0, u, h, T, D, N):
     '''
     x0 - starting position 
@@ -35,10 +42,11 @@ X_N is a three dimensional array
 '''
 
 
-def particle_cloud(x0, u, h, T_sec, D, N):
-    X = Euler_Maruyama(x0, u, h, max(T_sec), D, N) # runs simulation 
-    t = (T_sec/h).astype(int) # converts time in seconds to correct step
-    for p, plottime in enumerate(T_sec):
+
+def particle_cloud(x0, u, h, plot_times, D, N):
+    X = Euler_Maruyama(x0, u, h, max(plot_times), D, N) # runs simulation 
+    t = (plot_times/h).astype(int) # converts time in seconds to correct step
+    for p, plottime in enumerate(plot_times):
         plt.subplot(2,2,p + 1)
         plt.scatter(X[0,t[p]],X[1,t[p]], s=5)
         plt.xlim(0,25)
@@ -46,18 +54,9 @@ def particle_cloud(x0, u, h, T_sec, D, N):
         plt.title(f'{plottime} s')
     plt.show()
 
-h = 0.1
-u = np.array([0.3,0])
 
 
-#X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
-#plt.plot(X[0,:], X[1,:])
-#plt.show()
-T_sec = np.array([15, 30, 45, 60])
-particle_cloud(np.zeros([2, 1]), np.array([0.3, 0]), 0.1, T_sec, 0.02, 100)
-
-
-def concentration(x0, u, h, T_sec, D, N):
+def concentration(x0, u, h, plot_times, D, N):
     '''
     x0 - starting position 
     u  - velocity field
@@ -66,12 +65,12 @@ def concentration(x0, u, h, T_sec, D, N):
     D  - diffusion coefficient
     N  - number of particles
     '''
-    X = Euler_Maruyama(x0, u, h, max(T_sec), D, N)
+    X = Euler_Maruyama(x0, u, h, max(plot_times), D, N)
     nx, ny = 201, 101 # size of grid
     e = 0.1 # epsilon for Dirac delta approximation
     _, axes = plt.subplots(2, 2)
-    for i, _ in enumerate(T_sec): 
-        t = int(T_sec[i]/h)
+    for i, _ in enumerate(plot_times): 
+        t = int(plot_times[i]/h)
         x_span = np.linspace(0, 25, nx)
         y_span = np.linspace(-5, 5, ny)
         x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
@@ -82,8 +81,8 @@ def concentration(x0, u, h, T_sec, D, N):
             C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2)) # Adds particles to grid
         C /= N
         plt.subplot(2,2,i + 1)
-        plt.title(f'{T_sec[i]} s')
-        plt.contourf(x_grid, y_grid, C, 'afmhot_r')
+        plt.title(f'{plot_times[i]} s')
+        plt.contourf(x_grid, y_grid, C, cmap='afmhot_r')
     plt.colorbar(ax = axes.ravel().tolist())
     plt.show()
     return x_grid, y_grid, C
@@ -153,6 +152,19 @@ def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
     plt.show()
     return X
 
+
+'''Simulation parameters'''
+x0 = np.zeros([2,1])
+u = np.array([0.3,0])
+h = 0.1
+T_sec = 60
+D = 0.02
+N = 100
+Q = 10
 plot_times = np.array([15, 30, 45, 60])
 
-X = source_simulation(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 10, plot_times)
+'''Functions calls'''
+# X = Euler_Maruyama(x0, u, h, T_sec, D, N)
+# particle_cloud(x0, u, h, plot_times, D, N)
+# concentration(x0, u, h, plot_times, D, N)
+# source_simulation(x0, u, h, T_sec, D, Q, plot_times)
