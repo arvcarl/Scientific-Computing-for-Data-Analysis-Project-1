@@ -38,31 +38,12 @@ X_N is a three dimensional array
 def particle_cloud(x0, u, h, T_sec, D, N):
     X = Euler_Maruyama(x0, u, h, max(T_sec), D, N) # runs simulation 
     t = (T_sec/h).astype(int) # converts time in seconds to correct step
-
-    plt.subplot(2,2,1)
-    plt.scatter(X[0,t[0]],X[1,t[0]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('15 s')
-
-    plt.subplot(2,2,2)
-    plt.scatter(X[0,t[1]],X[1,t[1]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('30 s')
-
-    plt.subplot(2,2,3)
-    plt.scatter(X[0,t[2]],X[1,t[2]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('45 s')
-
-    plt.subplot(2,2,4)
-    plt.scatter(X[0,t[3]],X[1,t[3]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('60 s')
-
+    for p, plottime in enumerate(T_sec):
+        plt.subplot(2,2,p + 1)
+        plt.scatter(X[0,t[p]],X[1,t[p]], s=5)
+        plt.xlim(0,25)
+        plt.ylim(-5, 5)
+        plt.title(f'{plottime} s')
     plt.show()
 
 h = 0.1
@@ -72,11 +53,19 @@ u = np.array([0.3,0])
 #X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
 #plt.plot(X[0,:], X[1,:])
 #plt.show()
-#T_sec = np.array([15, 30, 45, 60])
-#particle_cloud(np.zeros([2, 1]), np.array([0.3, 0]), 0.1, T_sec, 0.02, 100)
+T_sec = np.array([15, 30, 45, 60])
+particle_cloud(np.zeros([2, 1]), np.array([0.3, 0]), 0.1, T_sec, 0.02, 100)
 
 
 def concentration(x0, u, h, T_sec, D, N):
+    '''
+    x0 - starting position 
+    u  - velocity field
+    h  - time step
+    T_sec - array of (up to) four times to show in plot
+    D  - diffusion coefficient
+    N  - number of particles
+    '''
     X = Euler_Maruyama(x0, u, h, max(T_sec), D, N)
     nx, ny = 201, 101 # size of grid
     e = 0.1 # epsilon for Dirac delta approximation
@@ -102,24 +91,33 @@ def concentration(x0, u, h, T_sec, D, N):
 
 
 def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
+    '''
+    x0 - starting position 
+    u  - velocity field
+    h  - time step
+    T  - simulation time
+    D  - diffusion coefficient
+    Q  - particles released per second
+    plot_times - array of (up to) four times to show in plot
+    '''
     t = int(T_sec/h) # total time steps
     n_particles = int(Q*h) # new particles added every time step
     X_tot = np.zeros([2, int(T_sec/h)+1, 0])
     for timestep in range(t):
-        X_temp = np.zeros([2, timestep, n_particles])
+        X_temp = np.zeros([2, timestep, n_particles])     # array with leading zeroes for not released particles
         X_N = np.zeros([2, int(T_sec/h)+1 - timestep, 0]) # array for position over time of every particle
         for p in range(n_particles):
             X = x0
             n_step = 0 # number of steps
-            while (n_step + timestep) *h < T_sec: 
+            while (n_step + timestep) *h < T_sec: # increments while elapsed time is shorter than T_sec
                 Z = np.random.normal(0, 1, 2)
                 new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z # calculates position of next step
                 X = np.column_stack((X, new_X)) # appends next step to X
                 n_step += 1
             X_N = np.dstack((X_N, X)) # appends particle X_p to array 
-        X_temp = np.concatenate((X_temp, X_N), axis = 1) 
-        X_tot = np.concatenate((X_tot, X_temp), axis = 2)
-    X = X_tot
+        X_temp = np.concatenate((X_temp, X_N), axis = 1)  # adds particles to leading zeroes
+        X_tot = np.concatenate((X_tot, X_temp), axis = 2) # adds particles to total array with all particles
+    X = X_tot # name change for plots
 
     # plotting
     N = n_particles * t # total amount of particles
@@ -127,7 +125,7 @@ def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
     e = 0.1 # epsilon for Dirac delta approximation
     _, axes = plt.subplots(2, 2)
     for i, _ in enumerate(plot_times): 
-        t = int(plot_times[i]/h)
+        t = int(plot_times[i]/h) # time step of current time to plot
         x_span = np.linspace(0, 25, nx)
         y_span = np.linspace(-5, 5, ny)
         x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
@@ -144,30 +142,14 @@ def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
     plt.show()
     plt.subplot(2,2,1)
 
+    # same plotting as in particle_cloud
     t = (plot_times/h).astype(int)
-    plt.scatter(X[0,t[0]],X[1,t[0]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('15 s')
-
-    plt.subplot(2,2,2)
-    plt.scatter(X[0,t[1]],X[1,t[1]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('30 s')
-
-    plt.subplot(2,2,3)
-    plt.scatter(X[0,t[2]],X[1,t[2]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('45 s')
-
-    plt.subplot(2,2,4)
-    plt.scatter(X[0,t[3]],X[1,t[3]])
-    plt.xlim(0,25)
-    plt.ylim(-5, 5)
-    plt.title('60 s')
-
+    for p, plottime in enumerate(plot_times):
+        plt.subplot(2,2,p + 1)
+        plt.scatter(X[0,t[p]],X[1,t[p]], s=5)
+        plt.xlim(0,25)
+        plt.ylim(-5, 5)
+        plt.title(f'{plottime} s')
     plt.show()
     return X
 
