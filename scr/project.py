@@ -94,10 +94,83 @@ def concentration(x0, u, h, T_sec, D, N):
         C /= N
         plt.subplot(2,2,i + 1)
         plt.title(f'{T_sec[i]} s')
-        plt.contourf(x_grid, y_grid, C)
+        plt.contourf(x_grid, y_grid, C, 'afmhot_r')
     plt.colorbar(ax = axes.ravel().tolist())
     plt.show()
     return x_grid, y_grid, C
 
-x, y, C = concentration(np.zeros([2,1]), u, h, np.array([15, 30, 45, 60]), 0.02, 2000)
-plt.show()
+
+
+def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
+    t = int(T_sec/h) # total time steps
+    n_particles = int(Q*h) # new particles added every time step
+    X_tot = np.zeros([2, int(T_sec/h)+1, 0])
+    for timestep in range(t):
+        X_temp = np.zeros([2, timestep, n_particles])
+        X_N = np.zeros([2, int(T_sec/h)+1 - timestep, 0]) # array for position over time of every particle
+        for p in range(n_particles):
+            X = x0
+            n_step = 0 # number of steps
+            while (n_step + timestep) *h < T_sec: 
+                Z = np.random.normal(0, 1, 2)
+                new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z # calculates position of next step
+                X = np.column_stack((X, new_X)) # appends next step to X
+                n_step += 1
+            X_N = np.dstack((X_N, X)) # appends particle X_p to array 
+        X_temp = np.concatenate((X_temp, X_N), axis = 1) 
+        X_tot = np.concatenate((X_tot, X_temp), axis = 2)
+    X = X_tot
+
+    # plotting
+    N = n_particles * t # total amount of particles
+    nx, ny = 201, 101 # size of grid
+    e = 0.1 # epsilon for Dirac delta approximation
+    _, axes = plt.subplots(2, 2)
+    for i, _ in enumerate(plot_times): 
+        t = int(plot_times[i]/h)
+        x_span = np.linspace(0, 25, nx)
+        y_span = np.linspace(-5, 5, ny)
+        x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
+        C = np.zeros_like(x_grid)
+        for p in range(int(N*plot_times[i]/T_sec)): # removes not yet existing particles by only incrementing over indexes with active particles
+            xp, yp = X[0, t, p], X[1, t, p]
+            d = (x_grid - xp)**2 + (y_grid - yp)**2 # Dirac delta approximation
+            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2)) # Adds particles to grid
+        C /= N
+        plt.subplot(2,2,i + 1)
+        plt.title(f'{plot_times[i]} s')
+        plt.contourf(x_grid, y_grid, C, cmap='afmhot_r')
+    plt.colorbar(ax = axes.ravel().tolist())
+    plt.show()
+    plt.subplot(2,2,1)
+
+    t = (plot_times/h).astype(int)
+    plt.scatter(X[0,t[0]],X[1,t[0]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('15 s')
+
+    plt.subplot(2,2,2)
+    plt.scatter(X[0,t[1]],X[1,t[1]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('30 s')
+
+    plt.subplot(2,2,3)
+    plt.scatter(X[0,t[2]],X[1,t[2]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('45 s')
+
+    plt.subplot(2,2,4)
+    plt.scatter(X[0,t[3]],X[1,t[3]])
+    plt.xlim(0,25)
+    plt.ylim(-5, 5)
+    plt.title('60 s')
+
+    plt.show()
+    return X
+
+plot_times = np.array([15, 30, 45, 60])
+
+X = source_simulation(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 10, plot_times)
