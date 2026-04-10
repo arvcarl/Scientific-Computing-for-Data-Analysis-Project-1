@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+
 '''from pathlib import Path
 
 this_dir = Path(__file__).resolve().parent
@@ -19,7 +21,7 @@ def Euler_Maruyama(x0, u, h, T, D, N):
         X = x0
         n_step = 0 # number of steps
         while n_step*h < T: 
-            Z = np.random.normal(0, 1, 2) 
+            Z = np.random.normal(0, 1, 2)
             new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z # calculates position of next step
             X = np.column_stack((X, new_X)) # appends next step to X
             n_step += 1
@@ -31,7 +33,6 @@ X_N is a three dimensional array
 2: Time steps
 3: Particle number
 '''
-
 
 
 def particle_cloud(x0, u, h, T_sec, D, N):
@@ -65,7 +66,10 @@ def particle_cloud(x0, u, h, T_sec, D, N):
     plt.show()
 
 h = 0.1
-X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
+u = np.array([0.3,0])
+
+
+#X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
 #plt.plot(X[0,:], X[1,:])
 #plt.show()
 #T_sec = np.array([15, 30, 45, 60])
@@ -73,30 +77,27 @@ X = Euler_Maruyama(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
 
 
 def concentration(x0, u, h, T_sec, D, N):
-    X = Euler_Maruyama(x0, u, h, T_sec, D, N)
-    nx, ny = 201, 101
-    e = 0.1
-    t = int(T_sec/h)
-    xp = np.linspace(0, 25, nx)
-    yp = np.linspace(-5, 5, ny)
-    xc, yc = np.meshgrid(xp, yp, indexing='xy')
-    C = np.zeros_like(xc)
-    for i, xc in enumerate(xp):
-        pass
-        for j, yc in enumerate(yp):
-            deltasum = 0
-            x = np.array([xc, yc])
-            for p in range(N):
-                dx = x - X[:,t,p]
-                delta = 1/(2*np.pi*e**2)*np.exp(-np.dot(dx, dx)/(2*e**2))
-                deltasum += delta
-            deltasum /= N
-            C[j, i] = deltasum
-    return xp, yp, C/N
+    X = Euler_Maruyama(x0, u, h, max(T_sec), D, N)
+    nx, ny = 201, 101 # size of grid
+    e = 0.1 # epsilon for Dirac delta approximation
+    _, axes = plt.subplots(2, 2)
+    for i, _ in enumerate(T_sec): 
+        t = int(T_sec[i]/h)
+        x_span = np.linspace(0, 25, nx)
+        y_span = np.linspace(-5, 5, ny)
+        x_grid, y_grid = np.meshgrid(x_span, y_span) # generates gridpoints
+        C = np.zeros_like(x_grid)
+        for p in range(N):
+            xp, yp = X[0, t, p], X[1, t, p]
+            d = (x_grid - xp)**2 + (y_grid - yp)**2 # Dirac delta approximation
+            C += 1/(2*np.pi*e**2)*np.exp(-d/(2*e**2)) # Adds particles to grid
+        C /= N
+        plt.subplot(2,2,i + 1)
+        plt.title(f'{T_sec[i]} s')
+        plt.contourf(x_grid, y_grid, C)
+    plt.colorbar(ax = axes.ravel().tolist())
+    plt.show()
+    return x_grid, y_grid, C
 
-from matplotlib import ticker, cm
-
-x, y, C = concentration(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 200)
-cs = plt.contourf(x, y, C)
-cbar = plt.colorbar(cs)
+x, y, C = concentration(np.zeros([2,1]), u, h, np.array([15, 30, 45, 60]), 0.02, 2000)
 plt.show()
