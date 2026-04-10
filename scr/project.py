@@ -99,5 +99,59 @@ def concentration(x0, u, h, T_sec, D, N):
     plt.show()
     return x_grid, y_grid, C
 
-x, y, C = concentration(np.zeros([2,1]), u, h, np.array([15, 30, 45, 60]), 0.02, 2000)
+def source_simulation(x0, u, h, T_sec, D, Q):
+    t = int(T_sec/h) # total time steps
+    n_particles = int(Q*h) # new particles added every time step
+    X_tot = np.zeros([2, int(T_sec/h)+1, 0])
+    for timestep in range(t):
+        print(timestep)
+        X_temp = np.zeros([2, timestep, n_particles])
+        X_N = np.zeros([2, int(T_sec/h)+1 - timestep, 0]) # array for position over time of every particle
+        for p in range(n_particles):
+            X = x0
+            n_step = 0 # number of steps
+            while (n_step + timestep) *h < T_sec: 
+                Z = np.random.normal(0, 1, 2)
+                new_X = X[:,-1] + u*h + np.sqrt(2*D*h)*Z # calculates position of next step
+                X = np.column_stack((X, new_X)) # appends next step to X
+                n_step += 1
+            X_N = np.dstack((X_N, X)) # appends particle X_p to array 
+        X_temp = np.concatenate((X_temp, X_N), axis = 1)
+        X_tot = np.concatenate((X_tot, X_temp), axis = 2)
+    
+    return X_tot
+
+
+X = source_simulation(np.zeros([2,1]), np.array([0.3,0]), h, 60, 0.02, 100)
+
+'''
+
+T_sec = np.array([15, 30, 45, 60])
+t = (T_sec/h).astype(int)
+
+plt.subplot(2,2,1)
+plt.scatter(X[0,t[0]],X[1,t[0]])
+plt.xlim(0,25)
+plt.ylim(-5, 5)
+plt.title('15 s')
+
+plt.subplot(2,2,2)
+plt.scatter(X[0,t[1]],X[1,t[1]])
+plt.xlim(0,25)
+plt.ylim(-5, 5)
+plt.title('30 s')
+
+plt.subplot(2,2,3)
+plt.scatter(X[0,t[2]],X[1,t[2]])
+plt.xlim(0,25)
+plt.ylim(-5, 5)
+plt.title('45 s')
+
+plt.subplot(2,2,4)
+plt.scatter(X[0,t[3]],X[1,t[3]])
+plt.xlim(0,25)
+plt.ylim(-5, 5)
+plt.title('60 s')
+
 plt.show()
+'''
