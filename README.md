@@ -20,5 +20,5 @@ The program has four main functions used for different simulations and plots:
 
 See setup for setup  
   
-Uppsala  
+Uppsala Algrebra  
 April 2026
