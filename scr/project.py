@@ -45,6 +45,7 @@ def particle_cloud(x0, u, h, plot_times, D, N):
     ''' runs simulation and loops through plot times '''
     X = Euler_Maruyama(x0, u, h, max(plot_times), D, N) # runs simulation 
     t = (plot_times/h).astype(int) # converts time in seconds to correct step
+    plt.figure(figsize=(20, 10))
     for p, plottime in enumerate(plot_times):
         plt.subplot(2,2,p + 1)
         plt.scatter(X[0,t[p]],X[1,t[p]], s=2)
@@ -69,7 +70,7 @@ def concentration(x0, u, h, plot_times, D, N):
     X = Euler_Maruyama(x0, u, h, max(plot_times), D, N)
     nx, ny = 201, 101 # size of grid
     e = 0.1 # epsilon for Dirac delta approximation
-    _, axes = plt.subplots(2, 2)
+    _, axes = plt.subplots(2, 2, figsize=(20,10))
     for i, _ in enumerate(plot_times): 
         t = int(plot_times[i]/h)
         x_span = np.linspace(0, 25, nx)
@@ -84,6 +85,8 @@ def concentration(x0, u, h, plot_times, D, N):
         plt.subplot(2,2,i + 1)
         plt.title(f'{plot_times[i]} s')
         plt.contourf(x_grid, y_grid, C, cmap='Reds')
+        plt.xlabel('x [m]')
+        plt.ylabel('y [m]')
     plt.colorbar(ax = axes.ravel().tolist())
     plt.show()
     return x_grid, y_grid, C
@@ -127,7 +130,7 @@ def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
     N = n_particles * t # total amount of particles
     nx, ny = 201, 101 # size of grid
     e = 0.1 # epsilon for Dirac delta approximation
-    _, axes = plt.subplots(2, 2)
+    _, axes = plt.subplots(2, 2, figsize=(20,10))
     for i, _ in enumerate(plot_times): 
         t = int(plot_times[i]/h) # time step of current time to plot
         x_span = np.linspace(0, 25, nx)
@@ -142,12 +145,14 @@ def source_simulation(x0, u, h, T_sec, D, Q, plot_times):
         plt.subplot(2,2,i + 1)
         plt.title(f'{plot_times[i]} s')
         plt.contourf(x_grid, y_grid, C, cmap='Reds')
+        plt.xlabel('x [m]')
+        plt.ylabel('y [m]')
     plt.colorbar(ax = axes.ravel().tolist())
     plt.show()
-    plt.subplot(2,2,1)
 
     '''same plotting as in particle_cloud'''
     t = (plot_times/h).astype(int)
+    plt.figure(figsize=(20, 10))
     for p, plottime in enumerate(plot_times):
         plt.subplot(2,2,p + 1)
         plt.scatter(X[0,t[p]],X[1,t[p]], s=2)
@@ -173,6 +178,6 @@ plot_times = np.array([15, 30, 45, 60])
 
 '''Functions calls'''
 # X = Euler_Maruyama(x0, u, h, T_sec, D, N)
-# particle_cloud(x0, u, h, plot_times, D, N)
-# concentration(x0, u, h, plot_times, D, N)
-# source_simulation(x0, u, h, T_sec, D, Q, plot_times)
+particle_cloud(x0, u, h, plot_times, D, N)
+concentration(x0, u, h, plot_times, D, N)
+source_simulation(x0, u, h, T_sec, D, Q, plot_times)
